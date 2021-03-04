@@ -116,3 +116,9 @@ void AGDPlayerController::OnRep_PlayerState()
 	// For edge cases where the PlayerState is repped before the Hero is possessed.
 	CreateHUD();
 }
+
+void AGDPlayerController::PostActorCreated()
+{
+	Super::PostActorCreated();
+	GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Red, FString(TEXT("Call AGDPlayerController")));
+}

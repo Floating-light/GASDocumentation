@@ -45,4 +45,8 @@ protected:
 	virtual void OnPossess(APawn* InPawn) override;
 
 	virtual void OnRep_PlayerState() override;
+
+	// ~ AActor
+	// For Test
+	virtual void PostActorCreated() override;
 };
