@@ -19,6 +19,7 @@ AGASDocumentationGameMode::AGASDocumentationGameMode()
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s() Failed to find HeroClass. If it was moved, please update the reference location in C++."), *FString(__FUNCTION__));
 	}
+	
 }
 
 void AGASDocumentationGameMode::HeroDied(AController* Controller)
