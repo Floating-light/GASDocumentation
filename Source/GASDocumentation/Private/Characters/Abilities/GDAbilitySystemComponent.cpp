@@ -7,3 +7,22 @@ void UGDAbilitySystemComponent::ReceiveDamage(UGDAbilitySystemComponent * Source
 {
 	ReceivedDamage.Broadcast(SourceASC, UnmitigatedDamage, MitigatedDamage);
 }
+
+
+
+FActiveGameplayEffectHandle UGDAbilitySystemComponent::ApplyGameplayEffectSpecToSelf(const FGameplayEffectSpec& GameplayEffect, FPredictionKey PredictionKey)
+{
+	FActiveGameplayEffectHandle Handle = Super::ApplyGameplayEffectSpecToSelf(GameplayEffect, PredictionKey);
+
+	if (GetOwnerRole() == ROLE_Authority)
+	{
+		OnGEAppliedDelegateToSelfServerAndClient.Broadcast(this, ActiveGameplayEffects.GetActiveGameplayEffect(Handle)->Spec, Handle);
+		FGameplayTagContainer Tags;
+		GameplayEffect.GetAllGrantedTags(Tags);
+		
+		//FString server = IsOwnerActorAuthoritative() ? TEXT("Server") : TEXT("Client");
+		//GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Yellow, FString::Printf(TEXT("%s: Call ApplyGameplayEffectSpecToSelf ------------------->>>%s"),*server, *Tags.ToString()));
+	}
+
+	return Handle;
+}

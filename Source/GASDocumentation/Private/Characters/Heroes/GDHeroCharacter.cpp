@@ -116,6 +116,8 @@ void AGDHeroCharacter::PossessedBy(AController * NewController)
 		SetHealth(GetMaxHealth());
 		SetMana(GetMaxMana());
 		SetStamina(GetMaxStamina());
+
+
 	}
 }
 

@@ -20,8 +20,13 @@ public:
 	bool CharacterAbilitiesGiven = false;
 	bool StartupEffectsApplied = false;
 
+
 	FReceivedDamageDelegate ReceivedDamage;
+
+	FOnGameplayEffectAppliedDelegate OnGEAppliedDelegateToSelfServerAndClient;
 
 	// Called from GDDamageExecCalculation. Broadcasts on ReceivedDamage whenever this ASC receives damage.
 	virtual void ReceiveDamage(UGDAbilitySystemComponent* SourceASC, float UnmitigatedDamage, float MitigatedDamage);
+
+	virtual FActiveGameplayEffectHandle ApplyGameplayEffectSpecToSelf(const FGameplayEffectSpec& GameplayEffect, FPredictionKey PredictionKey = FPredictionKey()) override;
 };
