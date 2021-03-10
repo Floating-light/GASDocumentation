@@ -19,9 +19,12 @@ void UGDAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActo
 
 void UGDAbilitySystemComponent::CallClientGEAddRemoveChange_Implementation(const FGameplayEffectSpec& GESpec)
 {
+	if (GetOwnerRole() == ROLE_Authority) // Does it need ???
+	{
+		// there must be listen server 
+		return;
+	}
 
-
-	//ActiveGameplayEffects.GetActiveGameplayEffect(Handle);
 	// Added Instant GE
 	if (GESpec.Def->DurationPolicy == EGameplayEffectDurationType::Instant)
 	{
@@ -61,30 +64,13 @@ FActiveGameplayEffectHandle UGDAbilitySystemComponent::ApplyGameplayEffectSpecTo
 		{
 			OnRealAnyGameplayEffectRemovedDelegate.Broadcast(GameplayEffect);
 		}
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Yellow, FString::Printf(TEXT("OwnerRole ---> %d, Ownerremote role ---> %d"), int(GetOwnerRole()), int(GetOwner()->GetRemoteRole())));
-			auto Controller = UGameplayStatics::GetPlayerController(this, 0);
-			if(Controller)
-				GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Yellow, FString::Printf(TEXT("Controller :OwnerRole ---> %d, Ownerremote role ---> %d"), int(Controller->GetLocalRole()), int(Controller->GetRemoteRole())));
-
-		}
-		// TODO:: avoid listen server
-		//if (GetAvatarActor())
+		//if (GEngine)
 		//{
-		//	APawn* pawn = Cast<APawn>(GetAvatarActor());
-		//	if (pawn && pawn->GetController())
-		//	{
-		//		if (pawn->GetController()->GetRemoteRole() == ROLE_AutonomousProxy)
-		//		{
-		//			return Handle;
-		//		}
-		//		else if (pawn->GetController()->GetRemoteRole() == ROLE_SimulatedProxy)
-		//		{
-		//			return Handle;
+		//	GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Yellow, FString::Printf(TEXT("OwnerRole ---> %d, Ownerremote role ---> %d"), int(GetOwnerRole()), int(GetOwner()->GetRemoteRole())));
+		//	auto Controller = UGameplayStatics::GetPlayerController(this, 0);
+		//	if(Controller)
+		//		GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Yellow, FString::Printf(TEXT("Controller :OwnerRole ---> %d, Ownerremote role ---> %d"), int(Controller->GetLocalRole()), int(Controller->GetRemoteRole())));
 
-		//		}
-		//	}
 		//}
 		CallClientGEAddRemoveChange(GameplayEffect);
 	}

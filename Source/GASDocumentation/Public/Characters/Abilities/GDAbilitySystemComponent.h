@@ -41,8 +41,9 @@ private:
 	UFUNCTION()
 	void RemoveGECallback(const FActiveGameplayEffect& ActivateGE)
 	{
+		// 必须除去Prediction 的调用, 否则会重复多次 ? 
+		// 仍需要验证
 		if (/*!bIsNetAuthority && */ActivateGE.PredictionKey.WasReceived() /*&& ActivateGE.PredictionKey.WasReceived() == false*/)
 			this->OnRealAnyGameplayEffectRemovedDelegate.Broadcast(ActivateGE.Spec);
 	}
-
 };
