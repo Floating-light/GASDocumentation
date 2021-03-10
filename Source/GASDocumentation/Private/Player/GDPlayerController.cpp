@@ -120,5 +120,5 @@ void AGDPlayerController::OnRep_PlayerState()
 void AGDPlayerController::PostActorCreated()
 {
 	Super::PostActorCreated();
-	GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Red, FString(TEXT("Call AGDPlayerController")));
+	//GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Red, FString(TEXT("Call AGDPlayerController")));
 }

@@ -2,26 +2,91 @@
 
 
 #include "Characters/Abilities/GDAbilitySystemComponent.h"
-
+#include "Kismet\GameplayStatics.h"
 void UGDAbilitySystemComponent::ReceiveDamage(UGDAbilitySystemComponent * SourceASC, float UnmitigatedDamage, float MitigatedDamage)
 {
 	ReceivedDamage.Broadcast(SourceASC, UnmitigatedDamage, MitigatedDamage);
 }
 
+void UGDAbilitySystemComponent::InitAbilityActorInfo(AActor* InOwnerActor, AActor* InAvatarActor)
+{
+	Super::InitAbilityActorInfo(InOwnerActor, InAvatarActor);
+	if (!ActiveGameplayEffects.OnActiveGameplayEffectRemovedDelegate.IsBoundToObject(this))
+	{
+		ActiveGameplayEffects.OnActiveGameplayEffectRemovedDelegate.AddUObject(this, &UGDAbilitySystemComponent::RemoveGECallback);
+	}
+}
+
+void UGDAbilitySystemComponent::CallClientGEAddRemoveChange_Implementation(const FGameplayEffectSpec& GESpec)
+{
+
+
+	//ActiveGameplayEffects.GetActiveGameplayEffect(Handle);
+	// Added Instant GE
+	if (GESpec.Def->DurationPolicy == EGameplayEffectDurationType::Instant)
+	{
+		// added 
+		OnRealAnyGameplayEffectAddedDelegate.Broadcast(this, GESpec, FActiveGameplayEffectHandle());
+		// just remove immediately
+		OnRealAnyGameplayEffectRemovedDelegate.Broadcast(GESpec);
+		return;
+	}
+
+	FActiveGameplayEffect* ActiveGE = nullptr;
+	for (FActiveGameplayEffect& ActiveEffect : &ActiveGameplayEffects)
+	{
+		if (ActiveEffect.Spec.Def == GESpec.Def)
+		{
+			ActiveGE = &ActiveEffect;
+			break;
+		}
+	}
+
+	if(ActiveGE != nullptr) // Added Duration or Infinite
+	{
+		OnRealAnyGameplayEffectAddedDelegate.Broadcast(this, ActiveGE->Spec, ActiveGE->Handle);
+	}
+}
 
 
 FActiveGameplayEffectHandle UGDAbilitySystemComponent::ApplyGameplayEffectSpecToSelf(const FGameplayEffectSpec& GameplayEffect, FPredictionKey PredictionKey)
 {
 	FActiveGameplayEffectHandle Handle = Super::ApplyGameplayEffectSpecToSelf(GameplayEffect, PredictionKey);
 
-	if (GetOwnerRole() == ROLE_Authority)
+	if (GetOwnerRole() == ROLE_Authority) //No PredictionKey
 	{
-		OnGEAppliedDelegateToSelfServerAndClient.Broadcast(this, ActiveGameplayEffects.GetActiveGameplayEffect(Handle)->Spec, Handle);
-		FGameplayTagContainer Tags;
-		GameplayEffect.GetAllGrantedTags(Tags);
-		
-		//FString server = IsOwnerActorAuthoritative() ? TEXT("Server") : TEXT("Client");
-		//GEngine->AddOnScreenDebugMessage(-1, 100.0f, FColor::Yellow, FString::Printf(TEXT("%s: Call ApplyGameplayEffectSpecToSelf ------------------->>>%s"),*server, *Tags.ToString()));
+		// Server Call Add delegate
+		OnRealAnyGameplayEffectAddedDelegate.Broadcast(this, GameplayEffect, Handle);
+		if (GameplayEffect.Def->DurationPolicy == EGameplayEffectDurationType::Instant)
+		{
+			OnRealAnyGameplayEffectRemovedDelegate.Broadcast(GameplayEffect);
+		}
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Yellow, FString::Printf(TEXT("OwnerRole ---> %d, Ownerremote role ---> %d"), int(GetOwnerRole()), int(GetOwner()->GetRemoteRole())));
+			auto Controller = UGameplayStatics::GetPlayerController(this, 0);
+			if(Controller)
+				GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Yellow, FString::Printf(TEXT("Controller :OwnerRole ---> %d, Ownerremote role ---> %d"), int(Controller->GetLocalRole()), int(Controller->GetRemoteRole())));
+
+		}
+		// TODO:: avoid listen server
+		//if (GetAvatarActor())
+		//{
+		//	APawn* pawn = Cast<APawn>(GetAvatarActor());
+		//	if (pawn && pawn->GetController())
+		//	{
+		//		if (pawn->GetController()->GetRemoteRole() == ROLE_AutonomousProxy)
+		//		{
+		//			return Handle;
+		//		}
+		//		else if (pawn->GetController()->GetRemoteRole() == ROLE_SimulatedProxy)
+		//		{
+		//			return Handle;
+
+		//		}
+		//	}
+		//}
+		CallClientGEAddRemoveChange(GameplayEffect);
 	}
 
 	return Handle;

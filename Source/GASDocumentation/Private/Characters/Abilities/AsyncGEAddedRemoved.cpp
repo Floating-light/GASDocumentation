@@ -2,69 +2,55 @@
 
 
 #include "Characters/Abilities/AsyncGEAddedRemoved.h"
+#include "Characters/Abilities/GDAbilitySystemComponent.h"
 
 
-UAsyncGEAddedRemoved* UAsyncGEAddedRemoved::ListenForGEAddedRemoved(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer TagsOfGE)
+UAsyncGEAddedRemoved* UAsyncGEAddedRemoved::ListenForGEAddedRemoved(UAbilitySystemComponent* AbilitySystemComponent, TSubclassOf<UGameplayEffect> TagsOfGE)
 {
 	UAsyncGEAddedRemoved* Listener = NewObject<UAsyncGEAddedRemoved>();
-	Listener->ASC = AbilitySystemComponent;
-	Listener->TagsOfGE = TagsOfGE;
+	UGDAbilitySystemComponent* GDASC = Cast<UGDAbilitySystemComponent>(AbilitySystemComponent);
+	Listener->ASC = GDASC;
+	Listener->TargetGE = TagsOfGE.GetDefaultObject();
 
-	if (!IsValid(AbilitySystemComponent) || TagsOfGE.Num() < 1)
+
+	if (!IsValid(GDASC) || TagsOfGE == nullptr)
 	{
 		//Listener->End();
+		Listener->EndTask();
 		return nullptr;
 	}
 
-	AbilitySystemComponent->OnActiveGameplayEffectAddedDelegateToSelf.AddUObject(Listener, &UAsyncGEAddedRemoved::OnActiveGameplayEffectAddedCallback);
-	AbilitySystemComponent->OnAnyGameplayEffectRemovedDelegate().AddUObject(Listener, &UAsyncGEAddedRemoved::OnRemoveGameplayEffectCallback);
-
-	// by tags Events
-	TArray<FGameplayTag> AnyTagsGEHave;
-	TagsOfGE.GetGameplayTagArray(AnyTagsGEHave);
-
-	for (FGameplayTag Tag : AnyTagsGEHave)
+	GDASC->OnRealAnyGameplayEffectAddedDelegate.AddUObject(Listener, &UAsyncGEAddedRemoved::OnActiveGameplayEffectAddedCallback);
+	if (!GDASC->OnRealAnyGameplayEffectRemovedDelegate.IsBoundToObject(Listener))
 	{
-		//AbilitySystemComponent->RegisterGameplayTagEvent();
+		GDASC->OnRealAnyGameplayEffectRemovedDelegate.AddUObject(Listener, &UAsyncGEAddedRemoved::OnRemoveGameplayEffectCallback);
 	}
 	return Listener;
 }
 
 void UAsyncGEAddedRemoved::OnActiveGameplayEffectAddedCallback(UAbilitySystemComponent* Target, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle)
 {
-	FGameplayTagContainer AssetTags;
-	SpecApplied.GetAllAssetTags(AssetTags);
-
-	FGameplayTagContainer GrantedTags;
-	SpecApplied.GetAllGrantedTags(GrantedTags);
-
-	TArray<FGameplayTag> TargetTags;
-	TagsOfGE.GetGameplayTagArray(TargetTags);
-
-	for (FGameplayTag tag : TargetTags)
+	if (SpecApplied.Def == this->TargetGE)
 	{
-		if (AssetTags.HasTagExact(tag) || GrantedTags.HasTagExact(tag))
-		{
-			OnGEAdded.Broadcast();
-		}
+		OnGEAdded.Broadcast();
 	}
 }
 
-void UAsyncGEAddedRemoved::OnRemoveGameplayEffectCallback(const FActiveGameplayEffect& EffectRemoved)
+void UAsyncGEAddedRemoved::OnRemoveGameplayEffectCallback(const FGameplayEffectSpec& EffectRemoved)
 {
-	FGameplayTagContainer AssetTags;
-	EffectRemoved.Spec.GetAllAssetTags(AssetTags);
-
-	FGameplayTagContainer GrantedTags;
-	EffectRemoved.Spec.GetAllGrantedTags(GrantedTags);
-
-	TArray<FGameplayTag> TargetTags;
-	TagsOfGE.GetGameplayTagArray(TargetTags);
-	for (FGameplayTag tag : TargetTags)
+	if (EffectRemoved.Def == this->TargetGE)
 	{
-		if (AssetTags.HasTagExact(tag) || GrantedTags.HasTagExact(tag))
-		{
-			OnGERemoved.Broadcast();
-		}
+		OnGERemoved.Broadcast();
 	}
+}
+
+void UAsyncGEAddedRemoved::EndTask()
+{
+	if (IsValid(ASC))
+	{
+		ASC->OnRealAnyGameplayEffectAddedDelegate.RemoveAll(this);
+		ASC->OnRealAnyGameplayEffectRemovedDelegate.RemoveAll(this);
+	}
+	SetReadyToDestroy();
+	MarkPendingKill();
 }

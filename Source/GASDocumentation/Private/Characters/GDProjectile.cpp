@@ -25,7 +25,7 @@ void AGDProjectile::BeginPlay()
 void AGDProjectile::Destroyed()
 {
 	Super::Destroyed();
-	GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Red, TEXT("Call Destroyed of Projectile "));
+	//GEngine->AddOnScreenDebugMessage(-1, 100.f, FColor::Red, TEXT("Call Destroyed of Projectile "));
 }
 
 

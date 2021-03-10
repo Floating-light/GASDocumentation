@@ -10,7 +10,6 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnGEAddedRemoved);
 
-
 //GameplayEffectTypes.h
 /**
  * 
@@ -27,15 +26,17 @@ public:
 	FOnGEAddedRemoved OnGERemoved;
 
 	UFUNCTION(BlueprintCallable, meta = (BlueprintInternalUseOnly = "true"))
-	static UAsyncGEAddedRemoved* ListenForGEAddedRemoved(UAbilitySystemComponent* AbilitySystemComponent, FGameplayTagContainer TagsOfGE);
+	static UAsyncGEAddedRemoved* ListenForGEAddedRemoved(UAbilitySystemComponent* AbilitySystemComponent, TSubclassOf<UGameplayEffect> TagsOfGE);
 
 	virtual void OnActiveGameplayEffectAddedCallback(UAbilitySystemComponent* Target, const FGameplayEffectSpec& SpecApplied, FActiveGameplayEffectHandle ActiveHandle);
 
-	virtual void OnRemoveGameplayEffectCallback(const FActiveGameplayEffect& EffectRemoved);
+	virtual void OnRemoveGameplayEffectCallback(const FGameplayEffectSpec& EffectRemoved);
 
+	UFUNCTION(BlueprintCallable)
+		void EndTask();
 protected:
 	UPROPERTY()
-	UAbilitySystemComponent* ASC;
+	class UGDAbilitySystemComponent* ASC;
 
-	FGameplayTagContainer TagsOfGE;
+	UGameplayEffect* TargetGE;
 };
