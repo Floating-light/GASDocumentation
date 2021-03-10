@@ -223,6 +223,12 @@ void UGDAttributeSetBase::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
+	//FDoRepLifetimeParams LocalDoRepParams;
+	//LocalDoRepParams.Condition = COND_None;
+	//LocalDoRepParams.RepNotifyCondition = REPNOTIFY_Always;
+	//FProperty* ReplicatedProperty = GetReplicatedProperty(StaticClass(), UGDAttributeSetBase::StaticClass(), GET_MEMBER_NAME_CHECKED(UGDAttributeSetBase, Health)); 
+	//RegisterReplicatedLifetimeProperty(ReplicatedProperty, OutLifetimeProps, LocalDoRepParams);
+
 	DOREPLIFETIME_CONDITION_NOTIFY(UGDAttributeSetBase, Health, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGDAttributeSetBase, MaxHealth, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UGDAttributeSetBase, HealthRegenRate, COND_None, REPNOTIFY_Always);

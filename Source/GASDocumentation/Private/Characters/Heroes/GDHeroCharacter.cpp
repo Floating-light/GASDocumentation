@@ -10,7 +10,7 @@
 #include "Components/DecalComponent.h"
 #include "Components/WidgetComponent.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GASDocumentation/GASDocumentationGameMode.h"
+#include "GameplayFramework/GASDocumentationGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Player/GDPlayerController.h"
@@ -116,6 +116,8 @@ void AGDHeroCharacter::PossessedBy(AController * NewController)
 		SetHealth(GetMaxHealth());
 		SetMana(GetMaxMana());
 		SetStamina(GetMaxStamina());
+
+
 	}
 }
 

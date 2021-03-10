@@ -25,6 +25,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	class UProjectileMovementComponent* ProjectileMovement;
 
+	virtual void Destroyed() override;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

@@ -90,6 +90,8 @@ void UAsyncTaskCooldownChanged::OnActiveGameplayEffectAddedCallback(UAbilitySyst
 				// This can be useful to gray out abilities until Server's cooldown comes in.
 				OnCooldownBegin.Broadcast(CooldownTag, -1.0f, -1.0f);
 			}
+			// SpecApplied.GetContext().GetAbilityInstance_NotReplicated()
+			// 本地预测时(或直接在Sserver上执行), 这个肯定不为空(如果是从GA apply 的这个GE), 当从Server复制过来时, 由于这个变量不会被复制, 应该就是nullptr  ？？？？？
 		}
 	}
 }
