@@ -38,5 +38,6 @@ protected:
 	UPROPERTY()
 	class UGDAbilitySystemComponent* ASC;
 
+	UPROPERTY()
 	UGameplayEffect* TargetGE;
 };

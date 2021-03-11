@@ -43,6 +43,10 @@ private:
 	{
 		// 必须除去Prediction 的调用, 否则会重复多次 ? 
 		// 仍需要验证
+		// Client 会把Instant Ge 的Prediction 当做Infinite GE 触发.
+		// 	// Clients should treat predicted instant effects as if they have infinite duration. The effects will be cleaned up later.
+		// bool bTreatAsInfiniteDuration = GetOwnerRole() != ROLE_Authority && PredictionKey.IsLocalClientKey() && Spec.Def->DurationPolicy == EGameplayEffectDurationType::Instant;
+		// 
 		if (/*!bIsNetAuthority && */ActivateGE.PredictionKey.WasReceived() /*&& ActivateGE.PredictionKey.WasReceived() == false*/)
 			this->OnRealAnyGameplayEffectRemovedDelegate.Broadcast(ActivateGE.Spec);
 	}
